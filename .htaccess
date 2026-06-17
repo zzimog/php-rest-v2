@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !.(php|html|css|js)$ [nc]
+  RewriteRule ^(.*)$ index.php [nc,qsa]
+</IfModule>
