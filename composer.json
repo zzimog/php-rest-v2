@@ -1,0 +1,6 @@
+{
+  "name": "zimog/php-rest-v2",
+  "require": {
+    "php": "^8.4"
+  }
+}
