@@ -7,6 +7,8 @@ class Router
     protected string $base;
     protected string $mount;
     protected array $routes = [];
+    protected ?\Closure $notFoundCallback = null;
+    protected ?\Closure $notAllowedCallback = null;
 
     /**
      * Create new router
@@ -19,7 +21,7 @@ class Router
         $this->routes = [];
     }
 
-    public static function uriTokenize(string $uri): array
+    private static function uriTokenize(string $uri): array
     {
         $parsed = parse_url($uri, PHP_URL_PATH);
         $tokens = preg_split("/\//", $parsed, -1, PREG_SPLIT_NO_EMPTY);
@@ -27,7 +29,7 @@ class Router
         return $tokens;
     }
 
-    public static function validMethod(array|string $methods)
+    private static function validMethod(array|string $methods): bool
     {
         $method = strtoupper($_SERVER["REQUEST_METHOD"]);
 
@@ -36,27 +38,39 @@ class Router
             (is_array($methods) && in_array($method, $methods));
     }
 
-    public function routes()
+    public function routes(): array
     {
         return $this->routes;
     }
 
-    public function mount(string $path)
+    public function mount(string $path): self
     {
         $this->mount = trim($path, "/");
         return $this;
     }
 
-    public function unmount()
+    public function unmount(): self
     {
         return $this->mount("");
+    }
+
+    public function notFound(\Closure $callback): self
+    {
+        $this->notFoundCallback = $callback;
+        return $this;
+    }
+
+    public function notAllowed(\Closure $callback): self
+    {
+        $this->notAllowedCallback = $callback;
+        return $this;
     }
 
     public function route(
         string $route,
         array|string $methods,
         callable $callback,
-    ): Router {
+    ): self {
         $route = trim($route, "/");
         $route = "{$this->base}/{$this->mount}/$route";
 
@@ -75,7 +89,7 @@ class Router
         return $this;
     }
 
-    public function run()
+    public function run(): void
     {
         $request_uri = $_SERVER["REQUEST_URI"];
         $request_tokens = static::uriTokenize($request_uri);
@@ -117,12 +131,22 @@ class Router
             }
 
             if (!static::validMethod($route_methods)) {
+                if ($this->notAllowedCallback !== null) {
+                    ($this->notAllowedCallback)();
+                    return;
+                }
+
                 throw new \Error("Method Not Allowed", 405);
             }
 
             $callback = $__ROUTE__["callback"];
             $callback(...$args);
 
+            return;
+        }
+
+        if ($this->notFoundCallback !== null) {
+            ($this->notFoundCallback)();
             return;
         }
 
