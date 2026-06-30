@@ -3,20 +3,11 @@
 use Core\DataType;
 use ORM\Model;
 use ORM\Attributes\Column;
-use ORM\Attributes\Foreign;
 use ORM\Attributes\Primary;
 use ORM\Attributes\Table;
 
 require_once "../src/autoload.php";
-
-function pre_print(mixed ...$any)
-{
-  echo "<pre>";
-  foreach ($any as $a) {
-    print_r($a);
-  }
-  echo "<pre/>";
-}
+require_once "utils.php";
 
 /**
  * User definition
@@ -46,28 +37,32 @@ class User extends Model
 class UserInfo extends Model
 {
   #[Primary]
-  #[Foreign()]
+  #[Column(foreign: User::class)]
   public int $user;
+
+  #[Column(nullable: true)]
+  public string $name;
+
+  #[Column(nullable: true)]
+  public string $surname;
 }
 
 /**
  * Test
  */
 
-$u = new User();
-pre_print("Table name: {$u->getTable()}");
+$user = new User();
+pre_print("Table name: {$user::getTable()}");
+table_print($user::getColumns());
 
-$cols = $u->getColumns();
-pre_print("Columns: ", $cols);
+$primaries = $user::getPrimary();
+pre_print("Primary key: ", $primaries);
 
-$primaries = $u->getPrimary();
-pre_print("Primary keys: ", $primaries);
-
-$uniques = $u->getUniques();
+$uniques = $user::getUniques();
 pre_print("Unique columns: ", $uniques);
 
 echo "<hr/>";
 
 $info = new UserInfo();
-$infoColumns = $info->getColumns();
-pre_print("Columns: ", $infoColumns);
+pre_print("Table name: {$info::getTable()}");
+table_print($info::getColumns());

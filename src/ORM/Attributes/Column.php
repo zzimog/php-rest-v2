@@ -15,6 +15,8 @@ class Column
     public ?string $unique = null,
     public ?bool $nullable = false,
     public ?bool $incremental = false,
+    public ?string $foreign = null,
+    public ?string $foreignKey = null
   ) {
     if ($size === 0) {
       $this->size = match ($type) {
