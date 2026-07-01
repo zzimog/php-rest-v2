@@ -6,7 +6,7 @@ use ORM\Attributes\Column;
 use ORM\Attributes\Primary;
 use ORM\Attributes\Table;
 
-require_once "../src/autoload.php";
+require_once "../../src/autoload.php";
 require_once "utils.php";
 
 /**
